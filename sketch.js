@@ -45,7 +45,7 @@ function drawLine(){
     x2 = map(x2,0,1,0,width);
     y2 = map(y2,0,1,height,0);
 
-    stroke('hotpink');
+    stroke('limegreen');
     line(x1,y1,x2,y2);
 
 }
@@ -58,43 +58,47 @@ function mousePressed(){
 
 }
 
+function distanceFromLine(point) {
+  var px = map(point.x, 0, 1, 0, width);
+  var py = map(point.y, 0, 1, height, 0);
+
+  var x1 = 0;
+  var y1 = map(b, 0, 1, height, 0);
+  var x2 = width;
+  var y2 = map(m + b, 0, 1, height, 0);
+
+  var lineLength = Math.hypot(x2 - x1, y2 - y1);
+  return abs((y2 - y1) * px - (x2 - x1) * py + x2 * y1 - y2 * x1) / lineLength;
+}
+
 function draw() {
-    background('pink');
-    for (var i = 0; i< data.length; i++){
-        var x = map(data[i].x,0,1,0,width);
-        var y = map(data[i].y,0,1,height,0);
-        fill('black');
-        ellipse(x,y,10,10);
-    }
-    
-    if (data.length >1){
-        linearRegression();
-        drawLine();
-    }
+  background('pink');
 
-/*
-// Define colors
-  let pink = color(255, 25, 180);   // Hot pink
-  let orange = color(255, 100, 0);   // Orange
-  let yellow = color(255, 255, 0);   // Yellow
+  if (data.length > 1) {
+    linearRegression();
+  }
 
-  // Loop through each pixel column
-  for (let x = 0; x < width; x++) {
-    let inter;
-    let c;
+  var maxDistance = 0;
+  for (var i = 0; i < data.length && data.length > 1; i++) {
+    maxDistance = Math.max(maxDistance, distanceFromLine(data[i]));
+  }
 
-    // First half: pink → orange
-    if (x < width / 2) {
-      inter = map(x, 0, width / 2, 0, 1);
-      c = lerpColor(pink, orange, inter);
-    }
-    // Second half: orange → yellow
-    else {
-      inter = map(x, width / 2, width, 0, 1);
-      c = lerpColor(orange, yellow, inter);
-    }
-    stroke(c);
-    line(x, 0, x, height);
-  }*/
+  var nearColor = color('yellow');
+  var farColor = color('mediumvioletred');
 
+  for (var i = 0; i < data.length; i++) {
+    var x = map(data[i].x, 0, 1, 0, width);
+    var y = map(data[i].y, 0, 1, height, 0);
+    var amount = maxDistance > 0
+      ? distanceFromLine(data[i]) / maxDistance
+      : 0;
+
+    fill(lerpColor(nearColor, farColor, amount));
+    noStroke();
+    ellipse(x, y, 10, 10);
+  }
+
+  if (data.length > 1) {
+    drawLine();
+  }
 }
